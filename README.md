@@ -69,8 +69,8 @@ Soltrail is an open-source analytics and visualization platform for Solana block
 | Variable               | Description                                 | Required |
 |------------------------|---------------------------------------------|----------|
 | `HELIUS_API_KEY`       | Helius API key for Solana data              | Yes      |
-| `BLOCKSEC_API_KEY`     | BlockSec API key for advanced analytics     | Yes       |
-| `NEXT_PUBLIC_SITE_URL` | Public url of your website                  | Yes       |
+| `BLOCKSEC_API_KEY`     | BlockSec API key for advanced analytics     | Yes      |
+| `NEXT_PUBLIC_SITE_URL` | Public url of your website                  | Yes      |
 
 ## Contributing
 
