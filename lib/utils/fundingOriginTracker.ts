@@ -28,10 +28,10 @@ export type FundingAnalysisResult = {
   exchangePercentage: number;
 };
 
-export function analyzeFundingSources(
+export async function analyzeFundingSources(
   transactions: HeliusTransaction[],
   targetAddress: string
-): FundingAnalysisResult {
+): Promise<FundingAnalysisResult> {
   console.log("[analyzeFundingSources] Called with targetAddress:", targetAddress, "transactions count:", transactions.length);
   const EPOCH_START = new Date(0);
   const analysis: FundingAnalysisResult = {

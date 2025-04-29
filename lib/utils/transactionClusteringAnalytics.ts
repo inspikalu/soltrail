@@ -55,10 +55,13 @@ const ANOMALY_THRESHOLDS = {
   NEW_COUNTERPARTY_WINDOW: 30 * 24 * 60 * 60 * 1000,
 };
 
-export function analyzeTransactions(
+export async function analyzeTransactions(
   transactions: HeliusTransaction[]
-): TransactionAnalysis {
-  console.log("[analyzeTransactions] Called with transactions count:", transactions.length);
+): Promise<TransactionAnalysis> {
+  console.log(
+    "[analyzeTransactions] Called with transactions count:",
+    transactions.length
+  );
   const clusters: ClusterPattern[] = [];
   const walletMap = new Map<string, WalletAssociation>();
   const anomalies: AnomalyDetection = {
@@ -312,7 +315,7 @@ function analyzeTemporalPatterns(
   });
 }
 
-export function formatAnalysisResults(analysis: TransactionAnalysis) {
+export async function formatAnalysisResults(analysis: TransactionAnalysis) {
   return {
     clusters: analysis.clusters.map((c) => ({
       addresses: c.commonAddresses,
@@ -342,4 +345,28 @@ export function formatAnalysisResults(analysis: TransactionAnalysis) {
   };
 }
 
-export type FormattedAnalysis = ReturnType<typeof formatAnalysisResults>;
+export type FormattedAnalysis = {
+  clusters: {
+      addresses: string[];
+      transactions: number;
+      totalValue: number;
+      types: string[];
+  }[];
+  wallets: {
+      wallet: string;
+      connections: {
+          address: string;
+          count: number;
+          lastInteraction: Date;
+          types: string[];
+      }[];
+      totalVolume: number;
+  }[];
+  anomalies: {
+    highValueCount: number;
+    newCounterparties: string[];
+    rapidSuccessionCount: number;
+    mixerPatternsCount: number;
+    failedTransactionsCount: number;
+};
+};

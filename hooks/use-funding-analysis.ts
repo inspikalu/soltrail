@@ -73,7 +73,7 @@ export function useFundingAnalysis(): UseFundingAnalysisReturn {
           setLoading(true)
           // Import the function dynamically to avoid SSR issues
           const { analyzeFundingSources } = await import("@/lib/utils/fundingOriginTracker")
-          const analysisResult = analyzeFundingSources(transactions, address)
+          const analysisResult = await analyzeFundingSources(transactions, address)
           setResult(analysisResult)
         } catch (err) {
           setError(err instanceof Error ? err.message : String(err))

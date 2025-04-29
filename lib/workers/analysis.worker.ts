@@ -4,12 +4,12 @@ import { analyzeFundingSources } from "../utils/fundingOriginTracker"
 const ctx: Worker = self as any
 
 // Listen for messages from the main thread
-ctx.addEventListener("message", (event) => {
+ctx.addEventListener("message", async (event) => {
   const { transactions, targetAddress, id } = event.data
 
   try {
     // Process the data using the analyzeFundingSources function
-    const result = analyzeFundingSources(transactions, targetAddress)
+    const result = await analyzeFundingSources(transactions, targetAddress)
 
     // Send the result back to the main thread
     ctx.postMessage({
