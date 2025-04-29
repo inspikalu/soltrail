@@ -7,6 +7,7 @@ const BLOCKSEC_API_URL = "https://aml.blocksec.com/address-label/api/v3/labels"
 const BLOCKSEC_API_KEY = process.env.BLOCKSEC_API_KEY
 
 export async function fetchAddressLabel(address: string): Promise<AddressLabelResponse | null> {
+  console.log("[fetchAddressLabel] Called with address:", address);
   try {
     // Validate API key
     if (!BLOCKSEC_API_KEY) {
@@ -39,9 +40,10 @@ export async function fetchAddressLabel(address: string): Promise<AddressLabelRe
     )
 
     // Return the response data
+    console.log("BlockSec API response:", response.data)
     return response.data
   } catch (error) {
-    console.error("Error fetching address label:", error)
+    console.error("[fetchAddressLabel] Error fetching address label:", error);
     return null
   }
 }

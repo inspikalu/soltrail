@@ -1,3 +1,4 @@
+"use server"
 // utils/convertTransactionHistorytograph.ts
 
 import { HeliusTransaction } from "../types/helius";
@@ -44,6 +45,7 @@ export interface TransactionGraph {
 export async function convertTransactionHistorytograph(
   walletAddress: string
 ): Promise<TransactionGraph> {
+  console.log("[convertTransactionHistorytograph] Called with walletAddress:", walletAddress);
   try {
     // Validate input
     if (!walletAddress || typeof walletAddress !== "string") {
@@ -71,7 +73,7 @@ export async function convertTransactionHistorytograph(
 
     return buildGraph(transactions.transactions, walletAddress);
   } catch (error) {
-    console.error("Error converting transaction history to graph:", error);
+    console.error("[convertTransactionHistorytograph] Error converting transaction history to graph:", error);
     throw error;
   }
 }

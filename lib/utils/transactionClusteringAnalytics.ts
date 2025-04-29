@@ -1,4 +1,5 @@
-// lib/analysis.ts
+"use server";
+
 import {
   TransactionType,
   NFTEventType,
@@ -57,6 +58,7 @@ const ANOMALY_THRESHOLDS = {
 export function analyzeTransactions(
   transactions: HeliusTransaction[]
 ): TransactionAnalysis {
+  console.log("[analyzeTransactions] Called with transactions count:", transactions.length);
   const clusters: ClusterPattern[] = [];
   const walletMap = new Map<string, WalletAssociation>();
   const anomalies: AnomalyDetection = {

@@ -7,26 +7,30 @@ const HELIUS_API_KEY = process.env.HELIUS_API_KEY
 const BASE_URL = "https://api.helius.xyz/v0"
 
 export async function GET(request: NextRequest) {
+  console.log("[GET /api/transactions] Incoming request", { url: request.url });
   if (!HELIUS_API_KEY) return NextResponse.json({ message: "No API key specified" }, { status: 500 })
 
   const { searchParams } = new URL(request.url)
   const address = searchParams.get("address")
 
   if (!address) {
+    console.warn("[GET /api/transactions] Missing address parameter");
     return NextResponse.json({ error: "Address parameter is required" }, { status: 400 })
   }
 
   try {
     const signatures = await getSignaturesForAddress(address)
     const transactions: HeliusTransaction[] = await fetchTransactionsWithRetry(signatures)
+    console.log("[GET /api/transactions] Returning transactions", { count: transactions.length })
     return NextResponse.json({ transactions })
   } catch (error) {
-    console.error("Error fetching transactions:", error)
+    console.error("[GET /api/transactions] Error fetching transactions:", error)
     return NextResponse.json({ error: "Failed to fetch transactions" }, { status: 500 })
   }
 }
 
 async function getSignaturesForAddress(address: string): Promise<string[]> {
+  console.log("[getSignaturesForAddress] Fetching signatures for address", address);
   try {
     const response = await axios.post(
       `https://mainnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}`,
@@ -40,12 +44,13 @@ async function getSignaturesForAddress(address: string): Promise<string[]> {
     )
     return response.data.result?.map((tx: { signature: string }) => tx.signature) || []
   } catch (error) {
-    console.error("Error fetching signatures:", error)
+    console.error("[getSignaturesForAddress] Error fetching signatures:", error)
     return []
   }
 }
 
 async function fetchTransactionsWithRetry(signatures: string[], batchSize = 50, retries = 2): Promise<any[]> {
+  console.log("[fetchTransactionsWithRetry] Fetching transactions for signatures", { count: signatures.length });
   let missing = [...signatures]
   const transactions: any[] = []
 

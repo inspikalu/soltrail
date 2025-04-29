@@ -1,3 +1,5 @@
+"use server"
+
 import type { HeliusTransaction } from "@/lib/types/helius";
 import type { AddressLabelResponse } from "@/lib/types/blocksec";
 import { fetchAddressLabel } from "@/lib/actions/label-actions";
@@ -50,6 +52,7 @@ export async function analyzeWallet(
   walletAddress: string,
   params: PatternDetectionParams = {}
 ): Promise<WalletAnalysisResult> {
+  console.log("[analyzeWallet] Called with walletAddress:", walletAddress, "params:", params);
   try {
     // Fetch both label and transactions in parallel
     const [label, transactions] = await Promise.all([
@@ -67,7 +70,7 @@ export async function analyzeWallet(
 
     return { label, patterns };
   } catch (error) {
-    console.error("Error analyzing wallet:", error);
+    console.error("[analyzeWallet] Error analyzing wallet:", error);
     throw error;
   }
 }

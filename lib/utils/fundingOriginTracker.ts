@@ -1,32 +1,39 @@
+"use server"
+
 // lib/utils/fundingOriginTracker.ts
-import type { HeliusTransaction, TransactionType, TransactionSource } from "@/lib/types/helius"
+import type { HeliusTransaction } from "@/lib/types/helius";
+import { TransactionType, TransactionSource } from "@/lib/types/helius";
 
 export type FundingAnalysisResult = {
   primarySource: {
-    address: string
-    amount: number
-    percentage: number
-    type: TransactionType
-    source: TransactionSource
-  }
+    address: string;
+    amount: number;
+    percentage: number;
+    type: TransactionType;
+    source: TransactionSource;
+  };
   timeline: Array<{
-    date: Date
-    cumulativeAmount: number
-    count: number
-  }>
+    date: Date;
+    cumulativeAmount: number;
+    count: number;
+  }>;
   sources: Array<{
-    address: string
-    totalAmount: number
-    firstContact: Date
-    lastContact: Date
-    type: TransactionType
-    isExchange: boolean
-  }>
-  exchangePercentage: number
-}
+    address: string;
+    totalAmount: number;
+    firstContact: Date;
+    lastContact: Date;
+    type: TransactionType;
+    isExchange: boolean;
+  }>;
+  exchangePercentage: number;
+};
 
-export function analyzeFundingSources(transactions: HeliusTransaction[], targetAddress: string): FundingAnalysisResult {
-  const EPOCH_START = new Date(0)
+export function analyzeFundingSources(
+  transactions: HeliusTransaction[],
+  targetAddress: string
+): FundingAnalysisResult {
+  console.log("[analyzeFundingSources] Called with targetAddress:", targetAddress, "transactions count:", transactions.length);
+  const EPOCH_START = new Date(0);
   const analysis: FundingAnalysisResult = {
     primarySource: {
       address: "",
@@ -38,51 +45,63 @@ export function analyzeFundingSources(transactions: HeliusTransaction[], targetA
     timeline: [],
     sources: [],
     exchangePercentage: 0,
-  }
+  };
 
   try {
     // 1. Filter and process transactions
     const fundingEvents = transactions.filter((tx) =>
-      tx.accountData?.some((acc) => acc.account === targetAddress && (acc.nativeBalanceChange ?? 0) > 0),
-    )
+      tx.accountData?.some(
+        (acc) =>
+          acc.account === targetAddress && (acc.nativeBalanceChange ?? 0) > 0
+      )
+    );
 
     // 2. Aggregate sources
     const sourceMap = new Map<
       string,
       {
-        total: number
-        first: Date
-        last: Date
-        types: Set<TransactionType>
-        sources: Set<TransactionSource>
+        total: number;
+        first: Date;
+        last: Date;
+        types: Set<TransactionType>;
+        sources: Set<TransactionSource>;
       }
-    >()
+    >();
 
     fundingEvents.forEach((tx) => {
-      const txDate = tx.timestamp ? new Date(tx.timestamp * 1000) : EPOCH_START
+      const txDate = tx.timestamp ? new Date(tx.timestamp * 1000) : EPOCH_START;
       const amount =
-        tx.nativeTransfers?.reduce((sum, t) => (t.toUserAccount === targetAddress ? sum + t.amount : sum), 0) || 0
+        tx.nativeTransfers?.reduce(
+          (sum, t) =>
+            t.toUserAccount === targetAddress ? sum + t.amount : sum,
+          0
+        ) || 0;
 
       tx.accountData?.forEach((acc) => {
-        if (acc.account !== targetAddress && (acc.nativeBalanceChange ?? 0) < 0) {
+        if (
+          acc.account !== targetAddress &&
+          (acc.nativeBalanceChange ?? 0) < 0
+        ) {
           const existing = sourceMap.get(acc.account) || {
             total: 0,
             first: txDate,
             last: txDate,
             types: new Set(),
             sources: new Set(),
-          }
+          };
 
           sourceMap.set(acc.account, {
             total: existing.total + amount,
             first: txDate < existing.first ? txDate : existing.first,
             last: txDate > existing.last ? txDate : existing.last,
             types: existing.types.add(tx.type || TransactionType.UNKNOWN),
-            sources: existing.sources.add(tx.source || TransactionSource.UNKNOWN),
-          })
+            sources: existing.sources.add(
+              tx.source || TransactionSource.UNKNOWN
+            ),
+          });
         }
-      })
-    })
+      });
+    });
 
     // 3. Convert map to sorted array
     analysis.sources = Array.from(sourceMap.entries())
@@ -94,10 +113,13 @@ export function analyzeFundingSources(transactions: HeliusTransaction[], targetA
         type: Array.from(data.types)[0],
         isExchange: Array.from(data.sources).some(isKnownExchange),
       }))
-      .sort((a, b) => b.totalAmount - a.totalAmount)
+      .sort((a, b) => b.totalAmount - a.totalAmount);
 
     // 4. Calculate metrics
-    const totalFunding = analysis.sources.reduce((sum, s) => sum + s.totalAmount, 0)
+    const totalFunding = analysis.sources.reduce(
+      (sum, s) => sum + s.totalAmount,
+      0
+    );
     analysis.primarySource = analysis.sources[0]
       ? {
           address: analysis.sources[0].address,
@@ -106,25 +128,33 @@ export function analyzeFundingSources(transactions: HeliusTransaction[], targetA
           type: analysis.sources[0].type,
           source: TransactionSource.UNKNOWN, // You'd need source per transaction
         }
-      : analysis.primarySource
+      : analysis.primarySource;
 
     analysis.exchangePercentage =
-      (analysis.sources.filter((s) => s.isExchange).reduce((sum, s) => sum + s.totalAmount, 0) / totalFunding) * 100
+      (analysis.sources
+        .filter((s) => s.isExchange)
+        .reduce((sum, s) => sum + s.totalAmount, 0) /
+        totalFunding) *
+      100;
 
     // 5. Build timeline
-    const dailyMap = new Map<string, { amount: number; count: number }>()
+    const dailyMap = new Map<string, { amount: number; count: number }>();
     fundingEvents.forEach((tx) => {
-      const date = tx.timestamp ? new Date(tx.timestamp * 1000) : EPOCH_START
-      const dayKey = date.toISOString().split("T")[0]
+      const date = tx.timestamp ? new Date(tx.timestamp * 1000) : EPOCH_START;
+      const dayKey = date.toISOString().split("T")[0];
 
       const amount =
-        tx.nativeTransfers?.reduce((sum, t) => (t.toUserAccount === targetAddress ? sum + t.amount : sum), 0) || 0
+        tx.nativeTransfers?.reduce(
+          (sum, t) =>
+            t.toUserAccount === targetAddress ? sum + t.amount : sum,
+          0
+        ) || 0;
 
       dailyMap.set(dayKey, {
         amount: (dailyMap.get(dayKey)?.amount || 0) + amount,
         count: (dailyMap.get(dayKey)?.count || 0) + 1,
-      })
-    })
+      });
+    });
 
     analysis.timeline = Array.from(dailyMap.entries())
       .map(([date, data]) => ({
@@ -132,12 +162,12 @@ export function analyzeFundingSources(transactions: HeliusTransaction[], targetA
         cumulativeAmount: data.amount,
         count: data.count,
       }))
-      .sort((a, b) => a.date.getTime() - b.date.getTime())
+      .sort((a, b) => a.date.getTime() - b.date.getTime());
   } catch (error) {
-    console.error("Funding analysis error:", error)
+    console.error("[analyzeFundingSources] Funding analysis error:", error);
   }
 
-  return analysis
+  return analysis;
 }
 
 // Helper type guard
@@ -148,6 +178,6 @@ function isKnownExchange(source: TransactionSource): boolean {
     TransactionSource.OPENSEA,
     TransactionSource.HYPERSPACE,
     TransactionSource.TENSOR,
-  ])
-  return EXCHANGES.has(source)
+  ]);
+  return EXCHANGES.has(source);
 }
