@@ -1,6 +1,6 @@
-# TransactionFlow
+# Soltrail
 
-TransactionFlow is an open-source analytics and visualization platform for Solana blockchain transactions. It enables users to trace, cluster, and label wallet activity, providing deep insights into the flow of funds and wallet behavior on Solana.
+Soltrail is an open-source analytics and visualization platform for Solana blockchain transactions. It enables users to trace, cluster, and label wallet activity, providing deep insights into the flow of funds and wallet behavior on Solana.
 
 ## Features
 
@@ -22,8 +22,8 @@ TransactionFlow is an open-source analytics and visualization platform for Solan
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/your-org/transactionflow.git
-   cd transactionflow
+   git clone https://github.com/your-org/soltrail.git
+   cd soltrail
    ```
 
 2. **Install dependencies:**
