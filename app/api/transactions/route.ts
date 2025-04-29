@@ -10,7 +10,8 @@ export async function GET(request: NextRequest) {
   console.log("[GET /api/transactions] Incoming request", { url: request.url });
   if (!HELIUS_API_KEY) return NextResponse.json({ message: "No API key specified" }, { status: 500 })
 
-  const { searchParams } = new URL(request.url)
+  // In production, request.url may be relative, so provide a base URL
+  const { searchParams } = new URL(request.url, `https://${request.headers.get("host")}`)
   const address = searchParams.get("address")
 
   if (!address) {
