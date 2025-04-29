@@ -5,6 +5,7 @@ import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import Providers from "@/components/providers"
 import Navbar from "@/components/navbar"
+import { Analytics } from "@vercel/analytics/react"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -24,6 +25,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
           <Providers>
+            <Analytics />
             <div className="flex flex-col min-h-screen">
               <Navbar />
               <main className="flex-1">{children}</main>
