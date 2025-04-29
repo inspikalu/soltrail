@@ -96,7 +96,12 @@ async function fetchLabel(
 async function fetchTransactions(
   walletAddress: string
 ): Promise<HeliusTransaction[]> {
-  const response = await fetch(`/api/transactions?address=${walletAddress}`);
+  let apiUrl = `/api/transactions?address=${walletAddress}`;
+  if (typeof window === "undefined") {
+    const base = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+    apiUrl = `${base.replace(/\/$/, "")}/api/transactions?address=${encodeURIComponent(walletAddress)}`;
+  }
+  const response = await fetch(apiUrl);
   if (!response.ok) {
     throw new Error(`Failed to fetch transactions: ${response.statusText}`);
   }

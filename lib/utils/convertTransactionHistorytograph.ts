@@ -53,9 +53,14 @@ export async function convertTransactionHistorytograph(
     }
 
     // Fetch transaction history from your API endpoint
-    const response = await fetch(
-      `/api/transactions?address=${encodeURIComponent(walletAddress)}`
-    );
+    // Use absolute URL for server-side fetches
+    let apiUrl = `/api/transactions?address=${encodeURIComponent(walletAddress)}`;
+    if (typeof window === "undefined") {
+      // On the server, use an environment variable for the site URL
+      const base = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+      apiUrl = `${base.replace(/\/$/, "")}/api/transactions?address=${encodeURIComponent(walletAddress)}`;
+    }
+    const response = await fetch(apiUrl);
     if (!response.ok) {
       throw new Error(
         `Failed to fetch transaction history: ${response.statusText}`
